@@ -24,15 +24,16 @@ export const api = createApi({
           const session = await fetchAuthSession();
           const { idToken } = session.tokens ?? {};
           const user = await getCurrentUser();
-          const userRole = idToken?.payload["current:role"] as string;
+          const userRole = idToken?.payload["custom:role"] as string;
 
           const endpoint =
             userRole === "manager"
-              ? `/manager/${user.userId}`
+              ? `/managers/${user.userId}`
               : `/tenants/${user.userId}`;
 
           let userDetailsResponse = await fetchWithBQ(endpoint);
-          // if user does not exist
+
+          // if user doesn't exist, create new user
           if (
             userDetailsResponse.error &&
             userDetailsResponse.error.status === 404
@@ -44,6 +45,7 @@ export const api = createApi({
               fetchWithBQ
             );
           }
+
           return {
             data: {
               cognitoInfo: { ...user },
@@ -59,4 +61,4 @@ export const api = createApi({
   }),
 });
 
-export const {} = api;
+export const { useGetAuthUserQuery } = api;
